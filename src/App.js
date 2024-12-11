@@ -120,13 +120,17 @@ const TranslationComponent = () => {
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
       {Object.keys(translations).length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" 
+        >
           {languages.map((lang) => (
             <div
-              key={lang.code}
-              className="p-4 bg-gray-50 rounded-md border border-gray-200 shadow-sm"
+            key={lang.code}
+            className="p-4 bg-gray-50 rounded-md border border-gray-200 shadow-sm"
+            onClick={async()=>{
+              await navigator.clipboard.writeText(translations[lang.code]?.text)
+            }}
             >
-              <h3 className="font-medium mb-2">{lang.name}:</h3>
+              <h3 className="font-medium mb-2">{lang.name} ({lang.code}):</h3>
               <p>{translations[lang.code]?.text}</p>
             </div>
           ))}
