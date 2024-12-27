@@ -68,7 +68,7 @@ const TranslationComponent = () => {
         };
       });
 
-      // Wait for all translations to complete
+
       const results = await Promise.all(translationPromises);
 
       // Convert results to an object
@@ -107,11 +107,10 @@ const TranslationComponent = () => {
           type="button"
           onClick={translateText}
           disabled={isLoading}
-          className={`px-4 py-2 text-white rounded-md ${
-            isLoading
+          className={`px-4 py-2 text-white rounded-md ${isLoading
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-gray-900	 hover:bg-gray-600"
-          }`}
+            }`}
         >
           {isLoading ? "Translating..." : "Translate to All Languages"}
         </button>
@@ -120,15 +119,15 @@ const TranslationComponent = () => {
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
       {Object.keys(translations).length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           {languages.map((lang) => (
             <div
-            key={lang.code}
-            className="p-4 bg-gray-50 rounded-md border border-gray-200 shadow-sm"
-            onClick={async()=>{
-              await navigator.clipboard.writeText(translations[lang.code]?.text)
-            }}
+              key={lang.code}
+              className="p-4 bg-gray-50 rounded-md border border-gray-200 shadow-sm"
+              onClick={async () => {
+                await navigator.clipboard.writeText(translations[lang.code]?.text)
+              }}
             >
               <h3 className="font-medium mb-2">{lang.name} ({lang.code}):</h3>
               <p>{translations[lang.code]?.text}</p>
