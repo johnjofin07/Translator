@@ -18,6 +18,7 @@ const TranslationComponent = () => {
     { code: "zh-Hans", name: "Chinese (Simplified)" },
   ];
 
+
   const translateText = async () => {
     if (!inputText) {
       setError("Please enter text to translate");
@@ -28,6 +29,9 @@ const TranslationComponent = () => {
     setError("");
 
     try {
+      // Use plain text format
+      const textsToTranslate = { text: inputText };
+
       // Get authentication token
       const tokenResponse = await fetch(
         "https://edge.microsoft.com/translate/auth",
@@ -42,8 +46,18 @@ const TranslationComponent = () => {
 
       const authToken = await tokenResponse.text();
 
-      // Create translation requests for all languages
-      const translationPromises = languages.map(async (lang) => {
+      // Create translation requests for all languages and all text entries
+      const allTranslations = {};
+
+      for (const lang of languages) {
+        allTranslations[lang.code] = { name: lang.name, entries: {} };
+
+        // Prepare all texts for this language
+        const textsArray = Object.entries(textsToTranslate).map(([_, value]) => ({
+          Text: value
+        }));
+
+        // Send batch request for all texts in this language
         const response = await fetch(
           `https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en&to=${lang.code}`,
           {
@@ -52,7 +66,7 @@ const TranslationComponent = () => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${authToken}`,
             },
-            body: JSON.stringify([{ Text: inputText }]),
+            body: JSON.stringify(textsArray),
           }
         );
 
@@ -61,26 +75,15 @@ const TranslationComponent = () => {
         }
 
         const data = await response.json();
-        return {
-          code: lang.code,
-          name: lang.name,
-          text: data[0].translations[0].text,
-        };
-      });
 
+        // Map the translated texts back to their keys
+        const keys = Object.keys(textsToTranslate);
+        keys.forEach((key, index) => {
+          allTranslations[lang.code].entries[key] = data[index].translations[0].text;
+        });
+      }
 
-      const results = await Promise.all(translationPromises);
-
-      // Convert results to an object
-      const newTranslations = {};
-      results.forEach((result) => {
-        newTranslations[result.code] = {
-          name: result.name,
-          text: result.text,
-        };
-      });
-
-      setTranslations(newTranslations);
+      setTranslations(allTranslations);
     } catch (err) {
       setError(
         "Translation failed. The service might be temporarily unavailable."
@@ -91,11 +94,12 @@ const TranslationComponent = () => {
     }
   };
 
+
   return (
     <>
       <div>
         <textarea
-          className="w-full p-2 border rounded-md min-h-[6rem] focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-2 border rounded-md min-h-[12rem] focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Enter English text to translate..."
@@ -108,8 +112,8 @@ const TranslationComponent = () => {
           onClick={translateText}
           disabled={isLoading}
           className={`px-4 py-2 text-white rounded-md ${isLoading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-gray-900	 hover:bg-gray-600"
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-gray-900	 hover:bg-gray-600"
             }`}
         >
           {isLoading ? "Translating..." : "Translate to All Languages"}
@@ -131,8 +135,8 @@ const TranslationComponent = () => {
                 className="absolute top-2 right-2 p-1 rounded-md hover:bg-gray-200 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigator.clipboard.writeText(translations[lang.code]?.text);
-                  // Show temporary tooltip using DOM manipulation instead of React state
+                  const textToCopy = translations[lang.code]?.entries?.text || '';
+                  navigator.clipboard.writeText(textToCopy);
                   const tooltip = e.currentTarget.querySelector('.tooltip');
                   if (tooltip) {
                     tooltip.classList.remove('hidden');
@@ -148,7 +152,9 @@ const TranslationComponent = () => {
                 <span className="tooltip hidden absolute -top-8 -left-2 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap">Copied!</span>
               </button>
               <h3 className="font-medium mb-2">{lang.name} ({lang.code}):</h3>
-              <p>{translations[lang.code]?.text}</p>
+              <div className="bg-white p-2 rounded">
+                <p>{translations[lang.code]?.entries?.text || ''}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -165,6 +171,7 @@ function App() {
     </div>
   );
 }
+
 
 export default App;
 export { TranslationComponent };
