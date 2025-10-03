@@ -18,7 +18,6 @@ const TranslationComponent = () => {
     { code: "zh-Hans", name: "Chinese (Simplified)" },
   ];
 
-
   const translateText = async () => {
     if (!inputText) {
       setError("Please enter text to translate");
@@ -94,7 +93,6 @@ const TranslationComponent = () => {
     }
   };
 
-
   return (
     <>
       <div>
@@ -123,8 +121,7 @@ const TranslationComponent = () => {
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
       {Object.keys(translations).length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {languages.map((lang) => (
             <div
               key={lang.code}
@@ -135,7 +132,9 @@ const TranslationComponent = () => {
                 className="absolute top-2 right-2 p-1 rounded-md hover:bg-gray-200 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
-                  const textToCopy = translations[lang.code]?.entries?.text || '';
+                  const translatedText = translations[lang.code]?.entries?.text || '';
+                  // Add language code as the first line of the translated block
+                  const textToCopy = lang.code + '\n' + translatedText;
                   navigator.clipboard.writeText(textToCopy);
                   const tooltip = e.currentTarget.querySelector('.tooltip');
                   if (tooltip) {
@@ -171,7 +170,6 @@ function App() {
     </div>
   );
 }
-
 
 export default App;
 export { TranslationComponent };
