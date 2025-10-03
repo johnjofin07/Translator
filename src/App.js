@@ -124,11 +124,29 @@ const TranslationComponent = () => {
           {languages.map((lang) => (
             <div
               key={lang.code}
-              className="p-4 bg-gray-50 rounded-md border border-gray-200 shadow-sm"
-              onClick={async () => {
-                await navigator.clipboard.writeText(translations[lang.code]?.text)
-              }}
+              className="p-4 bg-gray-50 rounded-md border border-gray-200 shadow-sm relative"
             >
+              <button
+                type="button"
+                className="absolute top-2 right-2 p-1 rounded-md hover:bg-gray-200 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(translations[lang.code]?.text);
+                  // Show temporary tooltip using DOM manipulation instead of React state
+                  const tooltip = e.currentTarget.querySelector('.tooltip');
+                  if (tooltip) {
+                    tooltip.classList.remove('hidden');
+                    setTimeout(() => tooltip.classList.add('hidden'), 1500);
+                  }
+                }}
+                title="Copy to clipboard"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                  <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                </svg>
+                <span className="tooltip hidden absolute -top-8 -left-2 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap">Copied!</span>
+              </button>
               <h3 className="font-medium mb-2">{lang.name} ({lang.code}):</h3>
               <p>{translations[lang.code]?.text}</p>
             </div>
